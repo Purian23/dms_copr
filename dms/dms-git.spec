@@ -39,8 +39,7 @@ Recommends:     qt6ct
 Requires:       dms-cli-git = %{version}-%{release}
 
 Provides:       dms = %{version}-%{release}
-Provides:       dms-shell = %{version}-%{release}
-Provides:       dms-shell-git = %{version}-%{release}
+Provides:       dms-git = %{version}-%{release}
 Conflicts:      dms
 
 %description

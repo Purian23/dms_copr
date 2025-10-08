@@ -8,7 +8,9 @@ URL:            https://github.com/AvengeMedia/DankMaterialShell
 Source0:        https://github.com/AvengeMedia/DankMaterialShell/archive/refs/tags/v%{version}.tar.gz#/DankMaterialShell-%{version}.tar.gz
 # dms CLI binary from danklinux releases
 Source1:        https://github.com/AvengeMedia/danklinux/releases/download/v%{version}/dms-amd64.gz
-Source2:        https://github.com/AvengeMedia/danklinux/releases/download/v%{version}/dms-arm64.gz
+Source2:        https://github.com/AvengeMedia/danklinux/releases/download/v%{version}/dms-amd64.gz.sha256
+Source3:        https://github.com/AvengeMedia/danklinux/releases/download/v%{version}/dms-arm64.gz
+Source4:        https://github.com/AvengeMedia/danklinux/releases/download/v%{version}/dms-arm64.gz.sha256
 
 # Note: NOT noarch because we install architecture-specific binaries
 BuildRequires:  gzip
@@ -35,7 +37,7 @@ Recommends:     qt6ct
 # Auto-require the dms-cli sub-package
 Requires:       dms-cli = %{version}-%{release}
 
-Provides:       dms-shell = %{version}-%{release}
+Provides:       dms = %{version}-%{release}
 
 %description
 DankMaterialShell (DMS) is a modern Wayland desktop shell built with Quickshell
@@ -58,12 +60,16 @@ This is the dms binary from the Dank Linux project.
 %prep
 %setup -q -n DankMaterialShell-%{version}
 
-# Extract the appropriate dms binary based on architecture
+# Extract and verify the appropriate dms binary based on architecture
 %ifarch x86_64
+# Verify checksum of compressed file
+echo "$(cat %{SOURCE2} | cut -d' ' -f1)  %{SOURCE1}" | sha256sum -c - || { echo "Checksum mismatch!"; exit 1; }
 gunzip -c %{SOURCE1} > dms
 %endif
 %ifarch aarch64
-gunzip -c %{SOURCE2} > dms
+# Verify checksum of compressed file
+echo "$(cat %{SOURCE4} | cut -d' ' -f1)  %{SOURCE3}" | sha256sum -c - || { echo "Checksum mismatch!"; exit 1; }
+gunzip -c %{SOURCE3} > dms
 %endif
 chmod +x dms
 
@@ -106,7 +112,7 @@ rm -f %{buildroot}%{_sysconfdir}/xdg/quickshell/dms/dms
 %{_bindir}/dms-cli
 
 %changelog
-* Tue Oct 07 2025 DankMaterialShell Team <maintainer@example.com> - 0.1.1-1
+* Mon Oct 07 2024 Purian23 <purian23@users.noreply.github.com> - 0.1.1-1
 - Initial Copr package release
 - Version 0.1.1 with stable tagged release
 - Separated dms CLI into dms-cli sub-package

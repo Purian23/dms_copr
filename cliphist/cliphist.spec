@@ -28,5 +28,6 @@ install -Dm755 cliphist %{buildroot}%{_bindir}/cliphist
 %doc README.md
 
 %changelog
-* Tue Oct 07 2025 Copr Packaging <copr@localhost> - 0.4.0-1
-- Initial Copr package
+* Mon Oct 07 2024 Purian23 <purian23@users.noreply.github.com> - 0.6.1-1
+- Initial Copr package release
+- Version 0.6.1

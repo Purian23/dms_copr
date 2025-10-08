@@ -35,8 +35,8 @@ Main DankMaterialShell desktop environment.
 
 ```bash
 # Enable repositories
-sudo dnf copr enable <your-username>/dgop
-sudo dnf copr enable <your-username>/dms
+sudo dnf copr enable purian23/dgop
+sudo dnf copr enable purian23/dms
 sudo dnf copr enable errornointernet/quickshell
 
 # Install DankMaterialShell

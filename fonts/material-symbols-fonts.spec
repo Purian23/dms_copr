@@ -24,13 +24,13 @@ all icons with adjustable fill, weight, grade, and optical size.
 # No build needed - pre-built font file
 
 %install
-install -d %{buildroot}%{_fontdir}
-install -m 0644 %{SOURCE0} %{buildroot}%{_fontdir}/MaterialSymbolsRounded.ttf
+install -d %{buildroot}%{_fontbasedir}/material-symbols
+install -m 0644 %{SOURCE0} %{buildroot}%{_fontbasedir}/material-symbols/MaterialSymbolsRounded.ttf
 
 %files
-%{_fontdir}/MaterialSymbolsRounded.ttf
+%{_fontbasedir}/material-symbols/MaterialSymbolsRounded.ttf
 
 %changelog
-* Tue Oct 07 2025 DMS Packager <your-email@example.com> - 1.0-1
+* Mon Oct 07 2024 Purian23 <purian23@users.noreply.github.com> - 1.0-1
 - Initial package for Material Symbols Rounded variable font
 - Required for DankMaterialShell UI icons

@@ -33,7 +33,7 @@ copr-cli create dgop \
 
 ```bash
 cd ~/rpmbuild/SPECS
-cp /home/purian23/Copr/dgop/dgop.spec .
+cp /home/purian23/dms_copr/dgop/dgop.spec .
 
 # Build SRPM
 rpmbuild -bs dgop.spec
@@ -46,7 +46,7 @@ copr-cli build dgop ~/rpmbuild/SRPMS/dgop-*.src.rpm
 
 **Option A: Manual Build**
 ```bash
-cp /home/purian23/Copr/dgop/dgop-git.spec ~/rpmbuild/SPECS/
+cp /home/purian23/dms_copr/dgop/dgop-git.spec ~/rpmbuild/SPECS/
 rpmbuild -bs dgop-git.spec
 copr-cli build dgop ~/rpmbuild/SRPMS/dgop-git-*.src.rpm
 ```
@@ -65,12 +65,12 @@ copr-cli build dgop ~/rpmbuild/SRPMS/dgop-git-*.src.rpm
 
 ---
 
-## 🏗️ **Part 2: Create dms-shell Copr Project**
+## 🏗️ **Part 2: Create dms Copr Project**
 
 ### Step 1: Create the Project
 
 ```bash
-copr-cli create dms-shell \
+copr-cli create dms \
   --chroot fedora-41-x86_64 \
   --chroot fedora-41-aarch64 \
   --chroot fedora-42-x86_64 \
@@ -80,11 +80,11 @@ copr-cli create dms-shell \
 
 ### Step 2: Configure External Repositories
 
-Go to Copr web UI → dms-shell project → Settings → **External repositories**
+Go to Copr web UI → dms project → Settings → **External repositories**
 
 Add these repositories:
 ```
-copr://<your-username>/dgop
+copr://purian23/dgop
 copr://errornointernet/quickshell
 ```
 
@@ -96,7 +96,7 @@ copr://errornointernet/quickshell
 
 #### Option A: Use External Coprs (Faster)
 1. Search Copr for up-to-date matugen and cliphist packages
-2. Add their Coprs as external repositories in dms-shell project
+2. Add their Coprs as external repositories in dms project
 3. Example:
    ```
    copr://<username>/matugen
@@ -164,44 +164,44 @@ copr://errornointernet/quickshell
    %{_bindir}/cliphist
    ```
 
-3. Build and upload them to dms-shell Copr first
+3. Build and upload them to dms Copr first
 
 ### Step 4: Build material-symbols-fonts
 
 ```bash
 cd ~/rpmbuild/SPECS
-cp /home/purian23/Copr/dms-shell/material-symbols-fonts.spec .
+cp /home/purian23/dms_copr/fonts/material-symbols-fonts.spec .
 
 # Build SRPM
 rpmbuild -bs material-symbols-fonts.spec
 
 # Upload to Copr
-copr-cli build dms-shell ~/rpmbuild/SRPMS/material-symbols-fonts-*.src.rpm
+copr-cli build dms ~/rpmbuild/SRPMS/material-symbols-fonts-*.src.rpm
 ```
 
 ### Step 5: Build dms (Stable)
 
 ```bash
-cp /home/purian23/Copr/dms-shell/dms.spec ~/rpmbuild/SPECS/
+cp /home/purian23/dms_copr/dms/dms.spec ~/rpmbuild/SPECS/
 
 # Build SRPM
 rpmbuild -bs dms.spec
 
 # Upload to Copr
-copr-cli build dms-shell ~/rpmbuild/SRPMS/dms-*.src.rpm
+copr-cli build dms ~/rpmbuild/SRPMS/dms-*.src.rpm
 ```
 
 ### Step 6: Build dms-git (Optional - Development)
 
 **Option A: Manual Build**
 ```bash
-cp /home/purian23/Copr/dms-shell/dms-git.spec ~/rpmbuild/SPECS/
+cp /home/purian23/dms_copr/dms/dms-git.spec ~/rpmbuild/SPECS/
 rpmbuild -bs dms-git.spec
-copr-cli build dms-shell ~/rpmbuild/SRPMS/dms-git-*.src.rpm
+copr-cli build dms ~/rpmbuild/SRPMS/dms-git-*.src.rpm
 ```
 
 **Option B: Auto-Rebuild with GitHub Webhook**
-1. Go to Copr web UI → dms-shell project → Packages
+1. Go to Copr web UI → dms project → Packages
 2. Click "New Package" → Type: **SCM**
 3. Fill in:
    - **Clone URL:** `https://github.com/AvengeMedia/DankMaterialShell.git`
@@ -252,7 +252,7 @@ copr-cli build <project> ~/rpmbuild/SRPMS/<package>-git-*.src.rpm
 ```bash
 # List builds
 copr-cli list-builds dgop
-copr-cli list-builds dms-shell
+copr-cli list-builds dms
 
 # Get build details
 copr-cli build-status dgop <build-id>
@@ -300,7 +300,7 @@ dms --version
    - Build `dgop.spec` first (stable)
    - Optional: `dgop-git.spec`
 
-2. **dms-shell project:**
+2. **dms project:**
    - Build `material-symbols-fonts.spec` (no dependencies)
    - If packaging: Build `matugen.spec` and `cliphist.spec`
    - Build `dms.spec` (depends on dgop + matugen + cliphist)
@@ -314,8 +314,8 @@ After building, users install with:
 
 ```bash
 # Enable repositories
-sudo dnf copr enable <your-username>/dgop
-sudo dnf copr enable <your-username>/dms-shell
+sudo dnf copr enable purian23/dgop
+sudo dnf copr enable purian23/dms
 sudo dnf copr enable errornointernet/quickshell
 
 # Install stable version
@@ -331,11 +331,11 @@ sudo dnf install dms-git
 
 ### Build Fails: "Nothing provides matugen"
 - You forgot to package matugen or add external Copr
-- Add matugen Copr to external repositories in dms-shell project
+- Add matugen Copr to external repositories in dms project
 
 ### Build Fails: "Nothing provides dgop"
 - You forgot to add dgop Copr as external repository
-- Go to dms-shell project settings → External repositories → Add `copr://<username>/dgop`
+- Go to dms project settings → External repositories → Add `copr://purian23/dgop`
 
 ### rpkg macros not working in dms-git.spec
 - Make sure `rpkg-util` is in buildroot packages

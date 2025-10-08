@@ -1,6 +1,6 @@
 # dgop Copr Project
 
-System monitoring CLI and REST API for Linux systems.
+Dank Linux Stateless System monitoring CLI for Linux systems.
 
 ## 📦 Packages
 
@@ -10,7 +10,7 @@ System monitoring CLI and REST API for Linux systems.
 ## 🔗 Links
 
 - **GitHub**: https://github.com/AvengeMedia/dgop
-- **Copr**: https://copr.fedorainfracloud.org/coprs/<your-username>/dgop
+- **Copr**: https://copr.fedorainfracloud.org/coprs/purian23/dgop
 
 ## 🚀 Building
 

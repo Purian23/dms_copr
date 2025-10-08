@@ -30,17 +30,15 @@ Features:
 %prep
 # Extract the appropriate binary based on architecture
 %ifarch x86_64
+# Verify checksum of compressed file
+echo "$(cat %{SOURCE1} | cut -d' ' -f1)  %{SOURCE0}" | sha256sum -c - || { echo "Checksum mismatch!"; exit 1; }
 gunzip -c %{SOURCE0} > dgop
-# Verify checksum
-sha256sum dgop > dgop.sha256
-grep "$(cat %{SOURCE1} | cut -d' ' -f1)" dgop.sha256 || { echo "Checksum mismatch!"; exit 1; }
 %endif
 
 %ifarch aarch64
+# Verify checksum of compressed file
+echo "$(cat %{SOURCE3} | cut -d' ' -f1)  %{SOURCE2}" | sha256sum -c - || { echo "Checksum mismatch!"; exit 1; }
 gunzip -c %{SOURCE2} > dgop
-# Verify checksum
-sha256sum dgop > dgop.sha256
-grep "$(cat %{SOURCE3} | cut -d' ' -f1)" dgop.sha256 || { echo "Checksum mismatch!"; exit 1; }
 %endif
 
 chmod +x dgop
@@ -56,6 +54,6 @@ install -Dm755 dgop %{buildroot}%{_bindir}/dgop
 %{_bindir}/dgop
 
 %changelog
-# * Tue Oct 07 2025 DankMaterialShell Team <maintainer@example.com> - 0.1.4-1
+* Mon Oct 07 2024 Purian23 <purian23@users.noreply.github.com> - 0.1.4-1
 - Initial Copr package release
 - Version 0.1.4 with pre-built binaries from GitHub releases

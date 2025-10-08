@@ -56,7 +56,3 @@ install -Dm755 dgop %{buildroot}%{_bindir}/dgop
 
 %changelog
 {{{ git_dir_changelog }}}
-
-# * Tue Oct 07 2025 DankMaterialShell Team <maintainer@example.com>
-- Initial git version package
-- Auto-versioning from git commits

@@ -16,10 +16,10 @@ Material You color generation tool for theming.
 %autosetup -n matugen-%{version}
 
 %build
-cargo install --path . --root %{_builddir}/matugen-install
+cargo build --release
 
 %install
-install -Dm755 %{_builddir}/matugen-install/bin/matugen %{buildroot}%{_bindir}/matugen
+install -Dm755 target/release/matugen %{buildroot}%{_bindir}/matugen
 
 %files
 %{_bindir}/matugen
@@ -27,5 +27,6 @@ install -Dm755 %{_builddir}/matugen-install/bin/matugen %{buildroot}%{_bindir}/m
 %doc README.md
 
 %changelog
-* Tue Oct 07 2025 Copr Packaging <copr@localhost> - 3.8.0-1
-- Initial Copr package
+* Mon Oct 07 2024 Purian23 <purian23@users.noreply.github.com> - 2.4.1-1
+- Initial Copr package release
+- Version 2.4.1
