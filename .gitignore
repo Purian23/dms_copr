@@ -1,0 +1,41 @@
+# RPM Build artifacts
+*.rpm
+*.src.rpm
+*.tar.gz
+*.tgz
+*.zip
+
+# Build directories
+rpmbuild/
+BUILD/
+BUILDROOT/
+RPMS/
+SOURCES/
+SPECS/
+SRPMS/
+
+# Mock build artifacts
+*.log
+mock-results/
+results_*
+
+# Editor files
+*~
+*.swp
+*.swo
+.vscode/
+.idea/
+*.kate-swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.bak
+*.tmp
+temp/
+
+# Downloaded sources (will be re-downloaded during build)
+dgop/sources/
+dms/sources/
