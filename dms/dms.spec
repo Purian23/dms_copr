@@ -1,16 +1,19 @@
 Name:           dms
-Version:        0.1.1
+Version:        0.1.4
 Release:        1%{?dist}
 Summary:        DankMaterialShell - Material 3 inspired shell for Wayland compositors (niri, Hyprland).
+
+# Disable debug package since we use pre-built binaries
+%global debug_package %{nil}
 
 License:        GPL-3.0-only
 URL:            https://github.com/AvengeMedia/DankMaterialShell
 Source0:        https://github.com/AvengeMedia/DankMaterialShell/archive/refs/tags/v%{version}.tar.gz#/DankMaterialShell-%{version}.tar.gz
-# dms CLI binary from danklinux releases
-Source1:        https://github.com/AvengeMedia/danklinux/releases/download/v%{version}/dms-amd64.gz
-Source2:        https://github.com/AvengeMedia/danklinux/releases/download/v%{version}/dms-amd64.gz.sha256
-Source3:        https://github.com/AvengeMedia/danklinux/releases/download/v%{version}/dms-arm64.gz
-Source4:        https://github.com/AvengeMedia/danklinux/releases/download/v%{version}/dms-arm64.gz.sha256
+# dms CLI binary from DankMaterialShell releases
+Source1:        https://github.com/AvengeMedia/DankMaterialShell/releases/download/v%{version}/dms-amd64.gz
+Source2:        https://github.com/AvengeMedia/DankMaterialShell/releases/download/v%{version}/dms-amd64.gz.sha256
+Source3:        https://github.com/AvengeMedia/DankMaterialShell/releases/download/v%{version}/dms-arm64.gz
+Source4:        https://github.com/AvengeMedia/DankMaterialShell/releases/download/v%{version}/dms-arm64.gz.sha256
 
 # Note: NOT noarch because we install architecture-specific binaries
 BuildRequires:  gzip
@@ -49,13 +52,13 @@ process monitoring, notification center, clipboard history, dock, control center
 lock screen, and comprehensive plugin system.
 
 %package -n dms-cli
-Summary:        Dank Linux installer CLI
+Summary:        DankMaterialShell CLI tool
 License:        GPL-3.0-only
-URL:            https://github.com/AvengeMedia/danklinux
+URL:            https://github.com/AvengeMedia/DankMaterialShell
 
 %description -n dms-cli
-Command-line interface for Dank Linux system installation and configuration.
-This is the dms binary from the Dank Linux project.
+Command-line interface for DankMaterialShell configuration and management.
+Provides native DBus bindings, NetworkManager integration, and system utilities.
 
 %prep
 %setup -q -n DankMaterialShell-%{version}
@@ -81,18 +84,8 @@ chmod +x dms
 mkdir -p %{buildroot}%{_sysconfdir}/xdg/quickshell/dms
 cp -r * %{buildroot}%{_sysconfdir}/xdg/quickshell/dms/
 
-# Install dms-cli binary (from danklinux)
+# Install dms-cli binary
 install -Dm755 dms %{buildroot}%{_bindir}/dms-cli
-
-# Install documentation
-install -Dm644 README.md %{buildroot}%{_docdir}/%{name}/README.md
-install -Dm644 LICENSE %{buildroot}%{_docdir}/%{name}/LICENSE
-install -Dm644 CONTRIBUTING.md %{buildroot}%{_docdir}/%{name}/CONTRIBUTING.md
-
-# Install docs directory if present
-if [ -d docs ]; then
-    cp -r docs/* %{buildroot}%{_docdir}/%{name}/
-fi
 
 # Remove git-related files
 rm -rf %{buildroot}%{_sysconfdir}/xdg/quickshell/dms/.git*
@@ -106,13 +99,12 @@ rm -f %{buildroot}%{_sysconfdir}/xdg/quickshell/dms/dms
 %license LICENSE
 %doc README.md CONTRIBUTING.md
 %{_sysconfdir}/xdg/quickshell/dms/
-%{_docdir}/%{name}/
 
 %files -n dms-cli
 %{_bindir}/dms-cli
 
 %changelog
-* Mon Oct 07 2024 Purian23 <purian23@users.noreply.github.com> - 0.1.1-1
-- Initial Copr package release
-- Version 0.1.1 with stable tagged release
-- Separated dms CLI into dms-cli sub-package
+* Tue Oct 08 2024 Purian23 <purian23@users.noreply.github.com> - 0.1.4-1
+- Update to v0.1.4 release
+- Changed dms-cli source from danklinux to DankMaterialShell releases
+- dms-cli is now the DankMaterialShell CLI tool (not danklinux installer)

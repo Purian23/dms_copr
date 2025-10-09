@@ -3,6 +3,9 @@ Version:        {{{ git_dir_version }}}
 Release:        1%{?dist}
 Summary:        System monitoring CLI and REST API (git version)
 
+# Disable debug package - Go binaries are already stripped
+%global debug_package %{nil}
+
 License:        MIT
 URL:            https://github.com/AvengeMedia/dgop
 VCS:            {{{ git_dir_vcs }}}
@@ -55,4 +58,5 @@ install -Dm755 dgop %{buildroot}%{_bindir}/dgop
 %{_bindir}/dgop
 
 %changelog
-{{{ git_dir_changelog }}}
+* Tue Oct 08 2024 Purian23 <purian23@users.noreply.github.com>
+- Automated git build from latest master commit

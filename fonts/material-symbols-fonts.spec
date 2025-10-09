@@ -5,7 +5,7 @@ Summary:        Material Symbols variable font by Google
 
 License:        Apache-2.0
 URL:            https://github.com/google/material-design-icons
-Source0:        https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%%5BFILL%%2CGRAD%%2Copsz%%2Cwght%%5D.ttf
+Source0:        https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%%5BFILL%%2CGRAD%%2Copsz%%2Cwght%%5D.ttf#/MaterialSymbolsRounded.ttf
 
 BuildArch:      noarch
 BuildRequires:  fontpackages-devel

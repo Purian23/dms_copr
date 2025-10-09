@@ -8,7 +8,7 @@
 
 ```bash
 # Install required tools
-sudo dnf install fedora-packager copr-cli rpkg-util git-core golang
+sudo dnf install fedora-packager copr-cli rpkg-util git-core golang rpkg
 
 # Configure Copr CLI
 copr-cli --help  # Follow setup if not configured
@@ -65,7 +65,100 @@ copr-cli build dgop ~/rpmbuild/SRPMS/dgop-git-*.src.rpm
 
 ---
 
-## 🏗️ **Part 2: Create dms Copr Project**
+## 🏗️ **Part 2: Build Standalone Dependencies**
+
+Before creating the DMS project, we need to build the standalone dependency packages that DMS requires. These are independent Copr repositories that anyone can use.
+
+### Step 1: Build cliphist (Wayland Clipboard Manager)
+
+```bash
+# Create Copr project
+copr-cli create cliphist \
+  --chroot fedora-41-x86_64 \
+  --chroot fedora-41-aarch64 \
+  --chroot fedora-42-x86_64 \
+  --chroot fedora-42-aarch64 \
+  --description "cliphist - Wayland clipboard history manager with support for text and images"
+
+# Vendor Go dependencies locally
+cd /tmp
+wget https://github.com/sentriz/cliphist/archive/refs/tags/v0.6.1.tar.gz -O cliphist-0.6.1.tar.gz
+tar xzf cliphist-0.6.1.tar.gz
+cd cliphist-0.6.1
+go mod vendor
+tar czf ~/rpmbuild/SOURCES/cliphist-0.6.1-vendor.tar.gz vendor/
+
+# Download source
+cd ~/rpmbuild/SOURCES
+wget https://github.com/sentriz/cliphist/archive/refs/tags/v0.6.1/cliphist-0.6.1.tar.gz
+
+# Build and upload
+cd ~/rpmbuild/SPECS
+cp /home/purian23/dms_copr/cliphist/cliphist.spec .
+rpmbuild -bs cliphist.spec
+copr-cli build cliphist ~/rpmbuild/SRPMS/cliphist-*.src.rpm
+```
+
+### Step 2: Build matugen (Material You Color Generator)
+
+```bash
+# Create Copr project
+copr-cli create matugen \
+  --chroot fedora-41-x86_64 \
+  --chroot fedora-41-aarch64 \
+  --chroot fedora-42-x86_64 \
+  --chroot fedora-42-aarch64 \
+  --description "matugen - Material You color generation tool for theming"
+
+# Vendor Rust dependencies locally
+cd /tmp
+wget https://github.com/InioX/matugen/archive/refs/tags/v2.4.1.tar.gz -O matugen-2.4.1.tar.gz
+tar xzf matugen-2.4.1.tar.gz
+cd matugen-2.4.1
+cargo vendor
+tar czf ~/rpmbuild/SOURCES/matugen-2.4.1-vendor.tar.gz vendor/
+
+# Download source
+cd ~/rpmbuild/SOURCES
+wget https://github.com/InioX/matugen/archive/refs/tags/v2.4.1.tar.gz -O matugen-2.4.1.tar.gz
+
+# Build and upload (takes ~5-6 minutes)
+cd ~/rpmbuild/SPECS
+cp /home/purian23/dms_copr/matugen/matugen.spec .
+rpmbuild -bs matugen.spec
+copr-cli build matugen ~/rpmbuild/SRPMS/matugen-*.src.rpm
+```
+
+### Step 3: Build material-symbols-fonts (Google Icon Font)
+
+```bash
+# Create Copr project
+copr-cli create material-symbols-fonts \
+  --chroot fedora-41-x86_64 \
+  --chroot fedora-41-aarch64 \
+  --chroot fedora-42-x86_64 \
+  --chroot fedora-42-aarch64 \
+  --description "Material Symbols variable font by Google - Required for DankMaterialShell UI icons"
+
+# Download font file (13.91MB)
+cd ~/rpmbuild/SOURCES
+wget 'https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded[FILL,GRAD,opsz,wght].ttf' -O MaterialSymbolsRounded.ttf
+
+# Build and upload
+cd ~/rpmbuild/SPECS
+cp /home/purian23/dms_copr/fonts/material-symbols-fonts.spec .
+rpmbuild -bs material-symbols-fonts.spec
+copr-cli build material-symbols-fonts ~/rpmbuild/SRPMS/material-symbols-fonts-*.src.rpm
+```
+
+**Important Notes:**
+- **Go packages** require vendored dependencies because Copr build environments have no network access
+- **Rust packages** also require vendored dependencies for the same reason
+- **Font packages** work with direct file downloads as long as the filename is simple
+
+---
+
+## 🏗️ **Part 3: Create dms Copr Project**
 
 ### Step 1: Create the Project
 
@@ -85,101 +178,13 @@ Go to Copr web UI → dms project → Settings → **External repositories**
 Add these repositories:
 ```
 copr://purian23/dgop
+copr://purian23/cliphist
+copr://purian23/matugen
+copr://purian23/material-symbols-fonts
 copr://errornointernet/quickshell
 ```
 
-**If using external Coprs for matugen/cliphist, add them here too!**
-
-### Step 3: Handle matugen & cliphist
-
-**Decision Time!** Choose one approach:
-
-#### Option A: Use External Coprs (Faster)
-1. Search Copr for up-to-date matugen and cliphist packages
-2. Add their Coprs as external repositories in dms project
-3. Example:
-   ```
-   copr://<username>/matugen
-   copr://<username>/cliphist
-   ```
-
-#### Option B: Package Yourself (Recommended)
-1. Create `matugen.spec` (Rust build):
-   ```spec
-   Name:           matugen
-   Version:        2.3.0
-   Release:        1%{?dist}
-   Summary:        Material You color generation tool
-   
-   License:        GPL-2.0-or-later
-   URL:            https://github.com/InioX/matugen
-   Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
-   
-   BuildRequires:  rust
-   BuildRequires:  cargo
-   
-   %description
-   Material You color generation tool for theming.
-   
-   %prep
-   %autosetup
-   
-   %build
-   cargo build --release
-   
-   %install
-   install -Dm755 target/release/matugen %{buildroot}%{_bindir}/matugen
-   
-   %files
-   %{_bindir}/matugen
-   ```
-
-2. Create `cliphist.spec` (Go build):
-   ```spec
-   Name:           cliphist
-   Version:        0.5.0
-   Release:        1%{?dist}
-   Summary:        Wayland clipboard history manager
-   
-   License:        GPL-3.0-or-later
-   URL:            https://github.com/sentriz/cliphist
-   Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
-   
-   BuildRequires:  golang >= 1.21
-   BuildRequires:  git-core
-   
-   %description
-   Wayland clipboard manager with support for text and images.
-   
-   %prep
-   %autosetup
-   
-   %build
-   go build -o cliphist
-   
-   %install
-   install -Dm755 cliphist %{buildroot}%{_bindir}/cliphist
-   
-   %files
-   %{_bindir}/cliphist
-   ```
-
-3. Build and upload them to dms Copr first
-
-### Step 4: Build material-symbols-fonts
-
-```bash
-cd ~/rpmbuild/SPECS
-cp /home/purian23/dms_copr/fonts/material-symbols-fonts.spec .
-
-# Build SRPM
-rpmbuild -bs material-symbols-fonts.spec
-
-# Upload to Copr
-copr-cli build dms ~/rpmbuild/SRPMS/material-symbols-fonts-*.src.rpm
-```
-
-### Step 5: Build dms (Stable)
+### Step 3: Build dms (Stable)
 
 ```bash
 cp /home/purian23/dms_copr/dms/dms.spec ~/rpmbuild/SPECS/
@@ -191,7 +196,7 @@ rpmbuild -bs dms.spec
 copr-cli build dms ~/rpmbuild/SRPMS/dms-*.src.rpm
 ```
 
-### Step 6: Build dms-git (Optional - Development)
+### Step 4: Build dms-git (Optional - Development)
 
 **Option A: Manual Build**
 ```bash
@@ -297,14 +302,20 @@ dms --version
 **Critical order to avoid dependency failures:**
 
 1. **dgop project:**
-   - Build `dgop.spec` first (stable)
+   - Build `dgop.spec` (stable) ✅
    - Optional: `dgop-git.spec`
 
-2. **dms project:**
-   - Build `material-symbols-fonts.spec` (no dependencies)
-   - If packaging: Build `matugen.spec` and `cliphist.spec`
-   - Build `dms.spec` (depends on dgop + matugen + cliphist)
+2. **Standalone dependency projects** (can be built in parallel):
+   - Build `cliphist.spec` in purian23/cliphist project ✅
+   - Build `matugen.spec` in purian23/matugen project ✅
+   - Build `material-symbols-fonts.spec` in purian23/material-symbols-fonts project ✅
+
+3. **dms project:**
+   - Create project and add external repositories (dgop, cliphist, matugen, material-symbols-fonts, quickshell)
+   - Build `dms.spec` (stable)
    - Optional: Build `dms-git.spec`
+
+**Note:** The standalone packages (cliphist, matugen, material-symbols-fonts) are now in their own Copr projects so they can be used by anyone, not just DMS users.
 
 ---
 
@@ -313,10 +324,8 @@ dms --version
 After building, users install with:
 
 ```bash
-# Enable repositories
-sudo dnf copr enable purian23/dgop
+# Enable repositories (all dependencies are automatically pulled in)
 sudo dnf copr enable purian23/dms
-sudo dnf copr enable errornointernet/quickshell
 
 # Install stable version
 sudo dnf install dms
@@ -325,17 +334,54 @@ sudo dnf install dms
 sudo dnf install dms-git
 ```
 
+**Note:** The dms Copr has external repositories configured, so enabling just `purian23/dms` will automatically enable all the dependency Coprs (dgop, cliphist, matugen, material-symbols-fonts, quickshell).
+
+Alternatively, users can enable individual packages:
+
+```bash
+# For individual packages
+sudo dnf copr enable purian23/dgop
+sudo dnf copr enable purian23/cliphist
+sudo dnf copr enable purian23/matugen
+sudo dnf copr enable purian23/material-symbols-fonts
+
+sudo dnf install dgop              # System monitor
+sudo dnf install cliphist          # Clipboard manager
+sudo dnf install matugen           # Color generator
+sudo dnf install material-symbols-fonts  # Icon font
+```
+
 ---
 
 ## 🐛 **Troubleshooting**
 
-### Build Fails: "Nothing provides matugen"
-- You forgot to package matugen or add external Copr
-- Add matugen Copr to external repositories in dms project
+### Build Fails: "Nothing provides matugen" or "Nothing provides cliphist"
+- You forgot to add the external Copr repositories to the dms project
+- Go to dms project settings → External repositories → Add:
+  - `copr://purian23/cliphist`
+  - `copr://purian23/matugen`
+  - `copr://purian23/material-symbols-fonts`
 
 ### Build Fails: "Nothing provides dgop"
 - You forgot to add dgop Copr as external repository
 - Go to dms project settings → External repositories → Add `copr://purian23/dgop`
+
+### Go build fails: "cannot find package" or network errors
+- Go packages need vendored dependencies in Copr (no network access during build)
+- Create vendor tarball locally: `go mod vendor && tar czf vendor.tar.gz vendor/`
+- Add as Source1 in spec and extract in %prep
+- Build with `--offline` or `-mod=vendor` flag
+
+### Rust build fails: "failed to download dependencies"
+- Rust packages need vendored dependencies in Copr (no network access during build)
+- Create vendor tarball locally: `cargo vendor && tar czf vendor.tar.gz vendor/`
+- Add as Source1 in spec and configure `.cargo/config.toml` to use vendor directory
+- Build with `cargo build --release --offline`
+
+### Font package fails: "Can't download file"
+- Use URL fragment `#/filename` to simplify source filename
+- Example: `Source0: https://.../%5Bencoded%5D.ttf#/SimpleFilename.ttf`
+- This avoids issues with special characters in filenames
 
 ### rpkg macros not working in dms-git.spec
 - Make sure `rpkg-util` is in buildroot packages
