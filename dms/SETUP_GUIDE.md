@@ -402,5 +402,199 @@ sudo dnf install material-symbols-fonts  # Icon font
 - **Mock Documentation:** https://rpm-software-management.github.io/mock/
 
 ---
+# Unified Spec Files
 
-**See CHECKLIST.md for a quick reference!**
+This directory contains unified spec files that can build both stable and git versions using conditional logic.
+
+## 📋 Files
+
+- **dms-unified.spec** - Single spec for both dms (stable) and dms-git (development)
+- **dgop-unified.spec** - Single spec for both dgop (stable) and dgop-git (development)
+
+## 🎯 Benefits
+
+✅ **Single spec to maintain** - Fix once, applies to both stable and git  
+✅ **Consistent builds** - Same build logic, just different sources  
+✅ **Standard pattern** - Used by many Fedora packages  
+✅ **Cleaner repository** - One spec instead of two per package  
+✅ **Ready for production** - Professional setup for AvengeMedia deployment
+
+## 🔨 Building Locally
+
+### Build Stable Version (Default)
+
+```bash
+# DMS stable
+rpmbuild -bs dms-unified.spec
+copr-cli build dms ~/rpmbuild/SRPMS/dms-*.src.rpm
+
+# dgop stable
+rpmbuild -bs dgop-unified.spec
+copr-cli build dgop ~/rpmbuild/SRPMS/dgop-*.src.rpm
+```
+
+### Build Git Version
+
+```bash
+# DMS git
+rpmbuild -bs dms-unified.spec --define '_git_build 1'
+copr-cli build dms-git ~/rpmbuild/SRPMS/dms-git-*.src.rpm
+
+# dgop git
+rpmbuild -bs dgop-unified.spec --define '_git_build 1'
+copr-cli build dgop ~/rpmbuild/SRPMS/dgop-git-*.src.rpm
+```
+
+## ⚙️ Copr Configuration
+
+### For Stable Builds
+
+**Add SCM Package:**
+```bash
+copr-cli add-package-scm dms \
+  --name dms \
+  --clone-url https://github.com/AvengeMedia/DankMaterialShell \
+  --spec dms-unified.spec \
+  --method rpkg \
+  --webhook-rebuild on
+```
+
+**Webhook triggers:** GitHub releases in DankMaterialShell repo
+
+### For Git Builds
+
+**Add SCM Package with Build Options:**
+```bash
+copr-cli add-package-scm dms-git \
+  --name dms \
+  --clone-url https://github.com/AvengeMedia/DankMaterialShell \
+  --spec dms-unified.spec \
+  --method rpkg \
+  --webhook-rebuild on
+```
+
+Then in **Copr web UI** → Project Settings → Edit Package → **Additional rpmbuild options:**
+```
+--define '_git_build 1'
+```
+
+**Webhook triggers:** GitHub pushes to master in DankMaterialShell repo
+
+## 📦 What Changes Between Builds
+
+### DMS Package
+
+| Aspect | Stable (`dms`) | Git (`dms-git`) |
+|--------|----------------|-----------------|
+| **Name** | `dms` | `dms-git` |
+| **Version** | `0.1.4` | `{{{ git_dir_version }}}` (e.g., `0.0.git.1169.9f3685e4`) |
+| **Source** | Release tarball from tags | Git checkout via rpkg |
+| **dms-cli** | Pre-built binary from releases | Built from danklinux master |
+| **Sub-package** | `dms-cli` | `dms-cli-git` |
+| **Conflicts** | None | Conflicts with `dms` |
+
+### dgop Package
+
+| Aspect | Stable (`dgop`) | Git (`dgop-git`) |
+|--------|-----------------|------------------|
+| **Name** | `dgop` | `dgop-git` |
+| **Version** | `0.1.4` | `{{{ git_dir_version }}}` |
+| **Source** | Pre-built binaries | Built from source |
+| **Conflicts** | None | Conflicts with `dgop` |
+
+## 🔄 Migration Path
+
+### Current Setup (Separate Specs)
+
+```
+dms/dms.spec          → Stable build
+dms/dms-git.spec      → Git build
+dgop/dgop.spec        → Stable build
+dgop/dgop-git.spec    → Git build
+```
+
+### New Setup (Unified Specs)
+
+```
+dms/dms-unified.spec  → Both stable and git
+dgop/dgop-unified.spec → Both stable and git
+```
+
+### Recommended Approach
+
+1. **For purian23 (testing):** Keep using current separate specs
+   - Already working
+   - No rush to migrate
+   
+2. **For AvengeMedia (production):** Use unified specs
+   - Place `dms-unified.spec` in DankMaterialShell repo root
+   - Place `dgop-unified.spec` in dgop repo root
+   - Configure two Copr projects (dms and dms-git) both pointing to same spec
+   - Set `_git_build` flag in dms-git project settings
+
+## 📝 Spec File Locations for AvengeMedia
+
+### Option A: Specs in Source Repos (Recommended)
+
+```
+https://github.com/AvengeMedia/DankMaterialShell
+  ├── src/
+  ├── dms-unified.spec     ← Add this
+  └── README.md
+
+https://github.com/AvengeMedia/dgop
+  ├── cmd/
+  ├── dgop-unified.spec    ← Add this
+  └── README.md
+```
+
+**Copr SCM Config:**
+- Clone URL: `https://github.com/AvengeMedia/DankMaterialShell`
+- Spec File: `dms-unified.spec`
+- Webhook: Same repo ✅
+
+### Option B: Public Packaging Repo
+
+```
+https://github.com/AvengeMedia/copr-specs (new public repo)
+  ├── dms/dms-unified.spec
+  └── dgop/dgop-unified.spec
+```
+
+**Copr SCM Config:**
+- Clone URL: `https://github.com/AvengeMedia/copr-specs`
+- Subdirectory: `dms`
+- Spec File: `dms-unified.spec`
+- Webhook: DankMaterialShell repo (separate)
+
+## 🎨 User Installation
+
+Once deployed to AvengeMedia Copr, users can install either version:
+
+```bash
+# Enable the repository
+sudo dnf copr enable AvengeMedia/dms
+
+# Install stable version (recommended)
+sudo dnf install dms
+
+# OR install development version
+sudo dnf copr enable AvengeMedia/dms-git
+sudo dnf install dms-git
+```
+
+Users wanting the latest features can prefer the git version by adding priority:
+```bash
+echo "priority=1" | sudo tee -a /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:AvengeMedia:dms-git.repo
+```
+
+## 🚀 Next Steps
+
+1. **Test unified specs locally** (optional)
+2. **Create AvengeMedia Copr account**
+3. **Copy unified specs to AvengeMedia repos**
+4. **Configure SCM packages in Copr**
+5. **Set up webhooks in GitHub**
+6. **Update documentation to point to AvengeMedia Copr**
+
+
