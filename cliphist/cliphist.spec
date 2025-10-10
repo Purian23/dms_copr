@@ -1,3 +1,5 @@
+%global debug_package %{nil}
+
 Name:           cliphist
 Version:        0.6.1
 Release:        1%{?dist}

@@ -1,13 +1,13 @@
-# Git-only spec for dgop - for Copr SCM builds with webhooks
-# Copr will use rpkg to process git macros automatically
+# Spec for dgop - uses rpkg macros for both stable and git builds
 
 %global debug_package %{nil}
 %global version {{{ git_dir_version }}}
+%global pkg_summary System monitoring CLI and REST API
 
-Name:           dgop-git
+Name:           dgop
 Version:        %{version}
 Release:        1%{?dist}
-Summary:        System monitoring CLI and REST API (git development version)
+Summary:        %{pkg_summary}
 
 License:        MIT
 URL:            https://github.com/AvengeMedia/dgop
@@ -16,18 +16,14 @@ Source0:        {{{ git_dir_pack }}}
 
 BuildRequires:  git-core
 BuildRequires:  golang >= 1.21
+BuildRequires:  rpkg
 
 Requires:       glibc
-
-Provides:       dgop = %{version}-%{release}
-Conflicts:      dgop
 
 %description
 dgop is a go-based stateless system monitoring tool that provides both a CLI interface
 and REST API for retrieving system metrics including CPU, memory, disk, network,
 processes, and GPU information.
-
-This is the development version built from the latest git commit.
 
 Features:
 - Interactive TUI with real-time system monitoring
