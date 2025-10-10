@@ -7,6 +7,7 @@ License:        GPL-3.0-or-later
 URL:            https://github.com/sentriz/cliphist
 Source0:        %{url}/archive/refs/tags/v%{version}.tar.gz#/cliphist-%{version}.tar.gz
 
+BuildRequires:  git-core
 BuildRequires:  golang
 Requires:       wl-clipboard
 
