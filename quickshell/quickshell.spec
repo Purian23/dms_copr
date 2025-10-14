@@ -1,7 +1,7 @@
 %bcond_with         asan
 
 %global debug_package %{nil}
-%global tag         0.2.0
+%global tag         0.2.1
 
 Name:               quickshell
 Version:            %{tag}

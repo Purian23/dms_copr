@@ -1,7 +1,7 @@
 %global debug_package %{nil}
 
 Name:           cliphist
-Version:        0.6.1
+Version:        0.7.0
 Release:        1%{?dist}
 Summary:        Wayland clipboard history manager
 
