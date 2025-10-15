@@ -304,14 +304,13 @@ else
 fi
 
 # ============================================================================
-# DMS-GREETER (Git-based with rpkg macros)
+# DMS-GREETER (Managed separately)
 # ============================================================================
 echo ""
 echo "📦 Checking dms-greeter..."
-echo "   ℹ️  Uses rpkg git macros - version auto-generated from git tags"
-echo "   Located at: avenge_media/dms-greeter/"
-echo "   Upstream: https://github.com/AvengeMedia/DankMaterialShell"
-echo "   Skipping automatic updates (git-based build)"
+echo "   ℹ️  Builds directly from: https://github.com/AvengeMedia/DankMaterialShell"
+echo "   Not tracked in dms_copr repo - managed in separate DankMaterialShell repo"
+echo "   Skipping automatic updates (separate repository)"
 
 # ============================================================================
 # MATERIAL SYMBOLS FONTS (rarely updates)
