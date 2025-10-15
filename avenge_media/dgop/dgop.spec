@@ -1,27 +1,26 @@
-# Spec for dgop - uses rpkg macros for both stable and git builds
-
 %global debug_package %{nil}
-%global version {{{ git_dir_version }}}
-%global pkg_summary System monitoring CLI and REST API
 
 Name:           dgop
-Version:        %{version}
+Version:        0.1.7
 Release:        1%{?dist}
-Summary:        %{pkg_summary}
+Summary:        System monitoring CLI and REST API
 
 License:        MIT
 URL:            https://github.com/AvengeMedia/dgop
-VCS:            {{{ git_dir_vcs }}}
-Source0:        {{{ git_dir_pack }}}
 
-BuildRequires:  git-core
-BuildRequires:  golang >= 1.21
-BuildRequires:  rpkg
+# Pre-built binaries from GitHub releases - using /latest/download/ for automatic updates
+Source0:        %{url}/releases/latest/download/dgop-linux-amd64.gz
+Source1:        %{url}/releases/latest/download/dgop-linux-amd64.gz.sha256
+Source2:        %{url}/releases/latest/download/dgop-linux-arm64.gz
+Source3:        %{url}/releases/latest/download/dgop-linux-arm64.gz.sha256
+
+BuildRequires:  gzip
+BuildRequires:  coreutils
 
 Requires:       glibc
 
 %description
-dgop is a go-based stateless system monitoring tool that provides both a CLI interface
+dgop is a Go-based system monitoring tool that provides both a CLI interface
 and REST API for retrieving system metrics including CPU, memory, disk, network,
 processes, and GPU information.
 
@@ -33,25 +32,36 @@ Features:
 - Lightweight single-binary deployment
 
 %prep
-{{{ git_dir_setup_macro }}}
+# Extract pre-built binary for the appropriate architecture
+%ifarch x86_64
+# Verify checksum of compressed file
+echo "$(cat %{SOURCE1} | cut -d' ' -f1)  %{SOURCE0}" | sha256sum -c - || { echo "Checksum mismatch!"; exit 1; }
+gunzip -c %{SOURCE0} > dgop
+%endif
+
+%ifarch aarch64
+# Verify checksum of compressed file
+echo "$(cat %{SOURCE3} | cut -d' ' -f1)  %{SOURCE2}" | sha256sum -c - || { echo "Checksum mismatch!"; exit 1; }
+gunzip -c %{SOURCE2} > dgop
+%endif
+
+chmod +x dgop
 
 %build
-export CGO_CPPFLAGS="${CPPFLAGS}"
-export CGO_CFLAGS="${CFLAGS}"
-export CGO_CXXFLAGS="${CXXFLAGS}"
-export CGO_LDFLAGS="${LDFLAGS}"
-export GOFLAGS="-buildmode=pie -trimpath -mod=readonly -modcacherw"
-
-# Build the binary
-go build -v -o dgop ./cmd/cli
+# Using pre-built binary - nothing to build
 
 %install
 install -Dm755 dgop %{buildroot}%{_bindir}/dgop
 
 %files
-%license LICENSE
-%doc README.md
 %{_bindir}/dgop
 
 %changelog
-{{{ git_dir_changelog }}}
+* Mon Oct 14 2024 Purian23 <purian23@users.noreply.github.com> - 0.1.7-1
+- Simplified spec to use latest stable tagged binary
+- Updated to version 0.1.7
+- Uses /latest/download/ for automatic binary fetching
+
+* Tue Oct 08 2024 Purian23 <purian23@users.noreply.github.com> - 0.1.4-1
+- Create unified spec file supporting both stable and git builds
+- Stable: Uses pre-built binaries from GitHub releases with SHA256 verification

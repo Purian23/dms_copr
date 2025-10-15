@@ -6,9 +6,17 @@ REPO="$1"
 TYPE="${2:-release}"  # release or commit
 
 if [[ "$TYPE" == "release" ]]; then
-    # Fetch latest release tag
-    curl -s "https://api.github.com/repos/${REPO}/releases/latest" | \
-        jq -r '.tag_name // empty'
+    # Fetch latest release tag (try releases API first, fall back to tags)
+    RELEASE_TAG=$(curl -s "https://api.github.com/repos/${REPO}/releases/latest" | \
+        jq -r '.tag_name // empty')
+
+    # If no releases, try tags endpoint
+    if [[ -z "$RELEASE_TAG" ]]; then
+        curl -s "https://api.github.com/repos/${REPO}/tags" | \
+            jq -r '.[0].name // empty'
+    else
+        echo "$RELEASE_TAG"
+    fi
 elif [[ "$TYPE" == "commit" ]]; then
     # Fetch latest commit info
     COMMIT_DATA=$(curl -s "https://api.github.com/repos/${REPO}/commits/master")

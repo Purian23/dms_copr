@@ -51,6 +51,8 @@ BUILD_CLIPHIST=false
 BUILD_MATUGEN=false
 BUILD_HYPRPICKER=false
 BUILD_BREAKPAD=false
+BUILD_GHOSTTY=false
+BUILD_DMS_GREETER=false
 
 # Check which specs changed
 if echo "$CHANGED_FILES" | grep -q "quickshell/quickshell.spec"; then
@@ -61,7 +63,7 @@ if echo "$CHANGED_FILES" | grep -q "quickshell/quickshell-git.spec"; then
     BUILD_QUICKSHELL_GIT=true
 fi
 
-if echo "$CHANGED_FILES" | grep -q "dgop/dgop.spec"; then
+if echo "$CHANGED_FILES" | grep -q "avenge_media/dgop/dgop.spec"; then
     BUILD_DGOP=true
 fi
 
@@ -81,6 +83,14 @@ if echo "$CHANGED_FILES" | grep -q "breakpad/breakpad.spec"; then
     BUILD_BREAKPAD=true
 fi
 
+if echo "$CHANGED_FILES" | grep -q "ghostty/ghostty.spec"; then
+    BUILD_GHOSTTY=true
+fi
+
+if echo "$CHANGED_FILES" | grep -q "avenge_media/dms-greeter/dms-greeter.spec"; then
+    BUILD_DMS_GREETER=true
+fi
+
 # If no git history, check for uncommitted changes
 if [[ -z "$CHANGED_FILES" ]]; then
     echo "ℹ️  No git history found, checking for uncommitted changes..."
@@ -88,11 +98,13 @@ if [[ -z "$CHANGED_FILES" ]]; then
 
     echo "$UNCOMMITTED" | grep -q "quickshell/quickshell.spec" && BUILD_QUICKSHELL=true
     echo "$UNCOMMITTED" | grep -q "quickshell/quickshell-git.spec" && BUILD_QUICKSHELL_GIT=true
-    echo "$UNCOMMITTED" | grep -q "dgop/dgop.spec" && BUILD_DGOP=true
+    echo "$UNCOMMITTED" | grep -q "avenge_media/dgop/dgop.spec" && BUILD_DGOP=true
     echo "$UNCOMMITTED" | grep -q "cliphist/cliphist.spec" && BUILD_CLIPHIST=true
     echo "$UNCOMMITTED" | grep -q "matugen/matugen.spec" && BUILD_MATUGEN=true
     echo "$UNCOMMITTED" | grep -q "hyprpicker/hyprpicker.spec" && BUILD_HYPRPICKER=true
     echo "$UNCOMMITTED" | grep -q "breakpad/breakpad.spec" && BUILD_BREAKPAD=true
+    echo "$UNCOMMITTED" | grep -q "ghostty/ghostty.spec" && BUILD_GHOSTTY=true
+    echo "$UNCOMMITTED" | grep -q "avenge_media/dms-greeter/dms-greeter.spec" && BUILD_DMS_GREETER=true
 fi
 
 # Trigger builds
@@ -124,6 +136,14 @@ fi
 
 if [[ "$BUILD_BREAKPAD" == true ]]; then
     trigger_build "breakpad" && BUILDS_TRIGGERED=$((BUILDS_TRIGGERED + 1))
+fi
+
+if [[ "$BUILD_GHOSTTY" == true ]]; then
+    trigger_build "ghostty" && BUILDS_TRIGGERED=$((BUILDS_TRIGGERED + 1))
+fi
+
+if [[ "$BUILD_DMS_GREETER" == true ]]; then
+    trigger_build "dms-greeter" && BUILDS_TRIGGERED=$((BUILDS_TRIGGERED + 1))
 fi
 
 echo ""

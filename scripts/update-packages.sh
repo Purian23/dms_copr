@@ -98,7 +98,7 @@ fi
 echo ""
 echo "📦 Checking dgop..."
 
-SPEC_FILE="dgop/dgop.spec"
+SPEC_FILE="avenge_media/dgop/dgop.spec"
 UPSTREAM_REPO="AvengeMedia/dgop"
 
 # Get current version from simplified spec
@@ -267,6 +267,51 @@ else
     echo "   ℹ️  Breakpad uses manual versioning (chromium snapshots)"
     echo "   Current version: $CURRENT_VERSION"
 fi
+
+# ============================================================================
+# GHOSTTY
+# ============================================================================
+echo ""
+echo "📦 Checking ghostty..."
+
+SPEC_FILE="ghostty/ghostty.spec"
+UPSTREAM_REPO="ghostty-org/ghostty"
+
+# Get current version from spec
+CURRENT_VERSION=$(grep -oP '^Version:\s+\K[0-9.]+' "$SPEC_FILE" || echo "unknown")
+echo "   Current: $CURRENT_VERSION"
+
+# Fetch latest release tag
+LATEST_TAG=$("$SCRIPT_DIR/fetch-version.sh" "$UPSTREAM_REPO" "release")
+LATEST_VERSION="${LATEST_TAG#v}"
+
+if [[ -n "$LATEST_VERSION" ]]; then
+    echo "   Latest:  $LATEST_VERSION"
+
+    if [[ "$CURRENT_VERSION" != "$LATEST_VERSION" ]]; then
+        echo "   ✨ Update available: $CURRENT_VERSION → $LATEST_VERSION"
+
+        # Update the spec file
+        sed -i "s/^Version:\s\+.*/Version:        $LATEST_VERSION/" "$SPEC_FILE"
+
+        UPDATED=$((UPDATED + 1))
+        UPDATED_PACKAGES+=("ghostty: $CURRENT_VERSION → $LATEST_VERSION")
+    else
+        echo "   ✓ Already up to date"
+    fi
+else
+    echo "   ⚠ Could not fetch latest version"
+fi
+
+# ============================================================================
+# DMS-GREETER (Git-based with rpkg macros)
+# ============================================================================
+echo ""
+echo "📦 Checking dms-greeter..."
+echo "   ℹ️  Uses rpkg git macros - version auto-generated from git tags"
+echo "   Located at: avenge_media/dms-greeter/"
+echo "   Upstream: https://github.com/AvengeMedia/DankMaterialShell"
+echo "   Skipping automatic updates (git-based build)"
 
 # ============================================================================
 # MATERIAL SYMBOLS FONTS (rarely updates)
