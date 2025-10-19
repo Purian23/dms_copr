@@ -73,19 +73,52 @@ jobs:
         run: |
           echo "🔍 Checking COPR versions against current specs..."
           
-          # Check quickshell-git version in COPR
-          COPR_QUICKSHELL_GIT=$(curl -s "https://copr.fedorainfracloud.org/api_3/package/list?ownername=avengemedia&projectname=danklinux&packagename=quickshell-git" | jq -r '.items[0].latest_build.version // "not_found"')
-          CURRENT_QUICKSHELL_GIT=$(grep -oP '^%global commit\s+\K[a-f0-9]+' quickshell/quickshell-git.spec | head -c 7)
+          COPR_BEHIND=false
           
-          echo "COPR quickshell-git: $COPR_QUICKSHELL_GIT"
-          echo "Current quickshell-git: $CURRENT_QUICKSHELL_GIT"
+          # Function to check if a package is behind
+          check_package() {
+            local package_name="$1"
+            local spec_file="$2"
+            local version_extract_cmd="$3"
+            
+            echo "Checking $package_name..."
+            
+            # Get current version from spec
+            CURRENT_VERSION=$(eval "$version_extract_cmd")
+            echo "  Current: $CURRENT_VERSION"
+            
+            # Get COPR version
+            COPR_VERSION=$(curl -s "https://copr.fedorainfracloud.org/api_3/package/list?ownername=avengemedia&projectname=danklinux&packagename=$package_name" | jq -r '.items[0].latest_build.version // "not_found"')
+            echo "  COPR: $COPR_VERSION"
+            
+            # Check if behind
+            if [[ "$COPR_VERSION" == "not_found" || "$COPR_VERSION" != *"$CURRENT_VERSION"* ]]; then
+              echo "  🚨 $package_name is behind!"
+              COPR_BEHIND=true
+            else
+              echo "  ✅ $package_name is up to date"
+            fi
+            echo ""
+          }
           
-          if [[ "$COPR_QUICKSHELL_GIT" != "not_found" && "$COPR_QUICKSHELL_GIT" != *"$CURRENT_QUICKSHELL_GIT"* ]]; then
+          # Check all packages (except dms-greeter)
+          check_package "quickshell" "quickshell/quickshell.spec" "grep -oP '^%global tag\s+\K[0-9.]+' quickshell/quickshell.spec"
+          check_package "quickshell-git" "quickshell/quickshell-git.spec" "grep -oP '^%global commit\s+\K[a-f0-9]+' quickshell/quickshell-git.spec | head -c 7"
+          check_package "dgop" "avenge_media/dgop/dgop.spec" "grep -oP '^Version:\s+\K[0-9.]+' avenge_media/dgop/dgop.spec"
+          check_package "cliphist" "cliphist/cliphist.spec" "grep -oP '^Version:\s+\K[0-9.]+' cliphist/cliphist.spec"
+          check_package "matugen" "matugen/matugen.spec" "grep -oP '^Version:\s+\K[0-9.]+' matugen/matugen.spec"
+          check_package "hyprpicker" "hyprpicker/hyprpicker.spec" "grep -oP '^Version:\s+\K[0-9.]+' hyprpicker/hyprpicker.spec"
+          check_package "breakpad" "breakpad/breakpad.spec" "grep -oP '^Version:\s+\K[0-9.]+' breakpad/breakpad.spec"
+          check_package "ghostty" "ghostty/ghostty.spec" "grep -oP '^Version:\s+\K[0-9.]+' ghostty/ghostty.spec"
+          check_package "material-symbols-fonts" "fonts/material-symbols-fonts.spec" "grep -oP '^Version:\s+\K[0-9.]+' fonts/material-symbols-fonts.spec"
+          
+          # Set output
+          if [[ "$COPR_BEHIND" == "true" ]]; then
             echo "copr_behind=true" >> $GITHUB_OUTPUT
-            echo "🚨 COPR is behind! Current: $CURRENT_QUICKSHELL_GIT, COPR: $COPR_QUICKSHELL_GIT"
+            echo "🚨 COPR is behind - builds needed!"
           else
             echo "copr_behind=false" >> $GITHUB_OUTPUT
-            echo "✅ COPR is up to date"
+            echo "✅ All packages are up to date in COPR"
           fi
 
       - name: Debug outputs
