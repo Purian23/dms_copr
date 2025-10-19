@@ -23,6 +23,7 @@ on:
       - '.github/workflows/auto-update.yml'
       - 'scripts/update-packages.sh'
       - 'scripts/fetch-version.sh'
+      - 'scripts/trigger-copr.sh'
 
 jobs:
   update-packages:
