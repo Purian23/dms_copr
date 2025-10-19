@@ -117,7 +117,7 @@ jobs:
     name: Trigger COPR builds
     needs: update-packages
     runs-on: ubuntu-latest
-    if: needs.update-packages.outputs.has_changes == 'true' && (github.event.inputs.trigger_builds == 'true' || github.event_name == 'schedule')
+    if: needs.update-packages.outputs.has_changes == 'true' && (github.event.inputs.trigger_builds == 'true' || github.event_name == 'schedule' || github.event_name == 'push')
 
     steps:
       - name: Checkout repository
