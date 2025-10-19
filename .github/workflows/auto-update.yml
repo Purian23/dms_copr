@@ -58,12 +58,13 @@ jobs:
           ./scripts/update-packages.sh | tee update-log.txt
 
           # Check if there are any changes
-          if git diff --quiet; then
+          CHANGES=$(git diff --name-only | wc -l)
+          if [ "$CHANGES" -eq 0 ]; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "📋 No updates found"
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "📋 Updates detected!"
+            echo "📋 Updates detected! ($CHANGES files changed)"
           fi
 
       - name: Commit and push changes
@@ -120,6 +121,13 @@ jobs:
     if: needs.update-packages.outputs.has_changes == 'true' && (github.event.inputs.trigger_builds == 'true' || github.event_name == 'schedule' || github.event_name == 'push')
 
     steps:
+      - name: Debug condition
+        run: |
+          echo "has_changes: ${{ needs.update-packages.outputs.has_changes }}"
+          echo "trigger_builds: ${{ github.event.inputs.trigger_builds }}"
+          echo "event_name: ${{ github.event_name }}"
+          echo "Condition result: ${{ needs.update-packages.outputs.has_changes == 'true' && (github.event.inputs.trigger_builds == 'true' || github.event_name == 'schedule' || github.event_name == 'push') }}"
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
