@@ -34,6 +34,7 @@ jobs:
 
     outputs:
       has_changes: ${{ steps.update.outputs.has_changes }}
+      copr_behind: ${{ steps.copr_check.outputs.copr_behind }}
 
     steps:
       - name: Checkout repository
@@ -65,6 +66,26 @@ jobs:
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
             echo "📋 Updates detected! ($CHANGES files changed)"
+          fi
+
+      - name: Check COPR versions
+        id: copr_check
+        run: |
+          echo "🔍 Checking COPR versions against current specs..."
+          
+          # Check quickshell-git version in COPR
+          COPR_QUICKSHELL_GIT=$(curl -s "https://copr.fedorainfracloud.org/api_3/package/list?ownername=avengemedia&projectname=danklinux&packagename=quickshell-git" | jq -r '.items[0].latest_build.version // "not_found"')
+          CURRENT_QUICKSHELL_GIT=$(grep -oP '^%global commit\s+\K[a-f0-9]+' quickshell/quickshell-git.spec | head -c 7)
+          
+          echo "COPR quickshell-git: $COPR_QUICKSHELL_GIT"
+          echo "Current quickshell-git: $CURRENT_QUICKSHELL_GIT"
+          
+          if [[ "$COPR_QUICKSHELL_GIT" != "not_found" && "$COPR_QUICKSHELL_GIT" != *"$CURRENT_QUICKSHELL_GIT"* ]]; then
+            echo "copr_behind=true" >> $GITHUB_OUTPUT
+            echo "🚨 COPR is behind! Current: $CURRENT_QUICKSHELL_GIT, COPR: $COPR_QUICKSHELL_GIT"
+          else
+            echo "copr_behind=false" >> $GITHUB_OUTPUT
+            echo "✅ COPR is up to date"
           fi
 
       - name: Commit and push changes
@@ -118,15 +139,16 @@ jobs:
     name: Trigger COPR builds
     needs: update-packages
     runs-on: ubuntu-latest
-    if: needs.update-packages.outputs.has_changes == 'true' && (github.event.inputs.trigger_builds == 'true' || github.event_name == 'schedule' || github.event_name == 'push')
+    if: (needs.update-packages.outputs.has_changes == 'true' || needs.update-packages.outputs.copr_behind == 'true') && (github.event.inputs.trigger_builds == 'true' || github.event_name == 'schedule' || github.event_name == 'push')
 
     steps:
       - name: Debug condition
         run: |
           echo "has_changes: ${{ needs.update-packages.outputs.has_changes }}"
+          echo "copr_behind: ${{ needs.update-packages.outputs.copr_behind }}"
           echo "trigger_builds: ${{ github.event.inputs.trigger_builds }}"
           echo "event_name: ${{ github.event_name }}"
-          echo "Condition result: ${{ needs.update-packages.outputs.has_changes == 'true' && (github.event.inputs.trigger_builds == 'true' || github.event_name == 'schedule' || github.event_name == 'push') }}"
+          echo "Condition result: ${{ (needs.update-packages.outputs.has_changes == 'true' || needs.update-packages.outputs.copr_behind == 'true') && (github.event.inputs.trigger_builds == 'true' || github.event_name == 'schedule' || github.event_name == 'push') }}"
 
       - name: Checkout repository
         uses: actions/checkout@v4
