@@ -36,6 +36,7 @@ jobs:
     outputs:
       has_changes: ${{ steps.update.outputs.has_changes }}
       copr_behind: ${{ steps.copr_check.outputs.copr_behind }}
+      behind_packages: ${{ steps.copr_check.outputs.behind_packages }}
 
     steps:
       - name: Checkout repository
@@ -75,6 +76,7 @@ jobs:
           echo "🔍 Checking COPR versions against current specs..."
           
           COPR_BEHIND=false
+          BEHIND_PACKAGES=""
           
           # Function to check if a package is behind
           check_package() {
@@ -96,6 +98,7 @@ jobs:
             if [[ "$COPR_VERSION" == "not_found" || "$COPR_VERSION" != *"$CURRENT_VERSION"* ]]; then
               echo "  🚨 $package_name is behind!"
               COPR_BEHIND=true
+              BEHIND_PACKAGES="$BEHIND_PACKAGES,$package_name"
             else
               echo "  ✅ $package_name is up to date"
             fi
@@ -113,12 +116,17 @@ jobs:
           check_package "ghostty" "ghostty/ghostty.spec" "grep -oP '^Version:\s+\K[0-9.]+' ghostty/ghostty.spec"
           check_package "material-symbols-fonts" "fonts/material-symbols-fonts.spec" "grep -oP '^Version:\s+\K[0-9.]+' fonts/material-symbols-fonts.spec"
           
-          # Set output
+          # Clean up the packages list (remove leading comma)
+          BEHIND_PACKAGES="${BEHIND_PACKAGES#,}"
+          
+          # Set outputs
           if [[ "$COPR_BEHIND" == "true" ]]; then
             echo "copr_behind=true" >> $GITHUB_OUTPUT
-            echo "🚨 COPR is behind - builds needed!"
+            echo "behind_packages=$BEHIND_PACKAGES" >> $GITHUB_OUTPUT
+            echo "🚨 COPR is behind - builds needed for: $BEHIND_PACKAGES"
           else
             echo "copr_behind=false" >> $GITHUB_OUTPUT
+            echo "behind_packages=" >> $GITHUB_OUTPUT
             echo "✅ All packages are up to date in COPR"
           fi
 
@@ -214,6 +222,8 @@ jobs:
           chmod 600 ~/.config/copr
 
       - name: Trigger builds
+        env:
+          BEHIND_PACKAGES: ${{ needs.update-packages.outputs.behind_packages }}
         run: |
           chmod +x scripts/trigger-copr.sh
           ./scripts/trigger-copr.sh

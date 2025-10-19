@@ -42,17 +42,37 @@ trigger_build() {
 
 # Check if we're running in GitHub Actions (COPR builds triggered by workflow)
 if [[ -n "$GITHUB_ACTIONS" ]]; then
-    echo "🤖 Running in GitHub Actions - building all packages"
-    # Build all packages when triggered by workflow
-    BUILD_QUICKSHELL=true
-    BUILD_QUICKSHELL_GIT=true
-    BUILD_DGOP=true
-    BUILD_CLIPHIST=true
-    BUILD_MATUGEN=true
-    BUILD_HYPRPICKER=true
-    BUILD_BREAKPAD=true
-    BUILD_GHOSTTY=true
-    BUILD_MATERIAL_SYMBOLS=true
+    echo "🤖 Running in GitHub Actions - building packages that are behind"
+    
+    # Get the list of packages that are behind from environment variable
+    BEHIND_PACKAGES="${BEHIND_PACKAGES:-}"
+    
+    if [[ -n "$BEHIND_PACKAGES" ]]; then
+        echo "📦 Packages that need building: $BEHIND_PACKAGES"
+        
+        # Set build flags based on which packages are behind
+        echo "$BEHIND_PACKAGES" | grep -q "quickshell" && BUILD_QUICKSHELL=true
+        echo "$BEHIND_PACKAGES" | grep -q "quickshell-git" && BUILD_QUICKSHELL_GIT=true
+        echo "$BEHIND_PACKAGES" | grep -q "dgop" && BUILD_DGOP=true
+        echo "$BEHIND_PACKAGES" | grep -q "cliphist" && BUILD_CLIPHIST=true
+        echo "$BEHIND_PACKAGES" | grep -q "matugen" && BUILD_MATUGEN=true
+        echo "$BEHIND_PACKAGES" | grep -q "hyprpicker" && BUILD_HYPRPICKER=true
+        echo "$BEHIND_PACKAGES" | grep -q "breakpad" && BUILD_BREAKPAD=true
+        echo "$BEHIND_PACKAGES" | grep -q "ghostty" && BUILD_GHOSTTY=true
+        echo "$BEHIND_PACKAGES" | grep -q "material-symbols-fonts" && BUILD_MATERIAL_SYMBOLS=true
+    else
+        echo "ℹ️  No specific packages identified as behind, building all packages"
+        # Fallback: build all packages if no specific list provided
+        BUILD_QUICKSHELL=true
+        BUILD_QUICKSHELL_GIT=true
+        BUILD_DGOP=true
+        BUILD_CLIPHIST=true
+        BUILD_MATUGEN=true
+        BUILD_HYPRPICKER=true
+        BUILD_BREAKPAD=true
+        BUILD_GHOSTTY=true
+        BUILD_MATERIAL_SYMBOLS=true
+    fi
 else
     echo "🔧 Running locally - checking for git changes"
     # Determine which packages to build based on git changes
