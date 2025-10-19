@@ -88,6 +88,16 @@ jobs:
             echo "✅ COPR is up to date"
           fi
 
+      - name: Debug outputs
+        run: |
+          echo "=== DEBUG OUTPUTS ==="
+          echo "has_changes: ${{ steps.update.outputs.has_changes }}"
+          echo "copr_behind: ${{ steps.copr_check.outputs.copr_behind }}"
+          echo "trigger_builds: ${{ github.event.inputs.trigger_builds }}"
+          echo "event_name: ${{ github.event_name }}"
+          echo "Condition: (has_changes == 'true' || copr_behind == 'true') && (trigger_builds == 'true' || event_name == 'schedule' || event_name == 'push')"
+          echo "===================="
+
       - name: Commit and push changes
         if: steps.update.outputs.has_changes == 'true'
         run: |
@@ -142,14 +152,6 @@ jobs:
     if: (needs.update-packages.outputs.has_changes == 'true' || needs.update-packages.outputs.copr_behind == 'true') && (github.event.inputs.trigger_builds == 'true' || github.event_name == 'schedule' || github.event_name == 'push')
 
     steps:
-      - name: Debug condition
-        run: |
-          echo "has_changes: ${{ needs.update-packages.outputs.has_changes }}"
-          echo "copr_behind: ${{ needs.update-packages.outputs.copr_behind }}"
-          echo "trigger_builds: ${{ github.event.inputs.trigger_builds }}"
-          echo "event_name: ${{ github.event_name }}"
-          echo "Condition result: ${{ (needs.update-packages.outputs.has_changes == 'true' || needs.update-packages.outputs.copr_behind == 'true') && (github.event.inputs.trigger_builds == 'true' || github.event_name == 'schedule' || github.event_name == 'push') }}"
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
