@@ -90,13 +90,18 @@ jobs:
             CURRENT_VERSION=$(eval "$version_extract_cmd")
             echo "  Current: $CURRENT_VERSION"
             
-            # Get COPR version
-            COPR_VERSION=$(curl -s "https://copr.fedorainfracloud.org/api_3/package/list?ownername=avengemedia&projectname=danklinux&packagename=$package_name" | jq -r '.items[0].latest_build.version // "not_found"')
+            # Get COPR version - try latest_succeeded first, then latest
+            COPR_DATA=$(curl -s "https://copr.fedorainfracloud.org/api_3/package/list?ownername=avengemedia&projectname=danklinux&packagename=$package_name")
+            COPR_VERSION=$(echo "$COPR_DATA" | jq -r '.items[0].builds.latest_succeeded.version // .items[0].builds.latest.version // "not_found"')
             echo "  COPR: $COPR_VERSION"
             
-            # Check if behind
-            if [[ "$COPR_VERSION" == "not_found" || "$COPR_VERSION" != *"$CURRENT_VERSION"* ]]; then
-              echo "  🚨 $package_name is behind!"
+            # Check if behind - only if we have a valid version to compare
+            if [[ "$COPR_VERSION" == "not_found" || "$COPR_VERSION" == "null" ]]; then
+              echo "  ⏳ $package_name has no successful builds yet - will build"
+              COPR_BEHIND=true
+              BEHIND_PACKAGES="$BEHIND_PACKAGES,$package_name"
+            elif [[ "$COPR_VERSION" != *"$CURRENT_VERSION"* ]]; then
+              echo "  🚨 $package_name is behind! (COPR: $COPR_VERSION vs Current: $CURRENT_VERSION)"
               COPR_BEHIND=true
               BEHIND_PACKAGES="$BEHIND_PACKAGES,$package_name"
             else
