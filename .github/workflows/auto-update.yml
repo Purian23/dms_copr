@@ -116,7 +116,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       needs.update-packages.outputs.has_changes == 'true' &&
-      (github.event.inputs.trigger_builds != 'false' || github.event_name == 'schedule')
+      (github.event.inputs.trigger_builds == 'true' || github.event_name == 'schedule')
 
     steps:
       - name: Checkout repository
