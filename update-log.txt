@@ -37,8 +37,8 @@
 
 📦 Checking ghostty...
    Current: 1.2.2
-   Latest:  1.2.2
-   ✓ Already up to date
+   Latest:  1.2.3
+   ✨ Update available: 1.2.2 → 1.2.3
 
 📦 Checking dms-greeter...
    ℹ️  Builds directly from: https://github.com/AvengeMedia/DankMaterialShell
@@ -51,4 +51,7 @@
    Skipping automatic updates for font file
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ All packages are up to date
+✅ Updated 1 package(s):
+   • ghostty: 1.2.2 → 1.2.3
+
+📝 Changes staged for commit
