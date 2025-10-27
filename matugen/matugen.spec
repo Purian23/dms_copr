@@ -1,5 +1,5 @@
 Name:           matugen
-Version:        2.4.1
+Version:        3.0.0
 Release:        1%{?dist}
 Summary:        Material You color generation tool
 
