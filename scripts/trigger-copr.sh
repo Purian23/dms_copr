@@ -52,6 +52,7 @@ else
     echo "🔧 Running locally"
     # Get files changed in the last commit
     CHANGED_FILES=$(git diff HEAD~1 --name-only 2>/dev/null || echo "")
+fi
 
 # Package build flags
 BUILD_QUICKSHELL=false
