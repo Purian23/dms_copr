@@ -35,6 +35,7 @@ jobs:
 
     outputs:
       has_changes: ${{ steps.update.outputs.has_changes }}
+      spec_changes: ${{ steps.check_push.outputs.spec_changes }}
 
     steps:
       - name: Checkout repository
@@ -68,6 +69,21 @@ jobs:
             echo "📋 Updates detected! ($CHANGES files changed)"
             echo "Changed files:"
             git diff --name-only | sed 's/^/  - /'
+          fi
+
+      - name: Check for spec changes in push
+        id: check_push
+        if: github.event_name == 'push'
+        run: |
+          # Check if any spec files were changed in the push itself
+          SPEC_CHANGES=$(git diff HEAD~1 --name-only | grep '\.spec$' || echo "")
+          if [[ -n "$SPEC_CHANGES" ]]; then
+            echo "spec_changes=true" >> $GITHUB_OUTPUT
+            echo "📋 Spec files modified in push:"
+            echo "$SPEC_CHANGES" | sed 's/^/  - /'
+          else
+            echo "spec_changes=false" >> $GITHUB_OUTPUT
+            echo "📋 No spec files modified in push"
           fi
 
       - name: Debug outputs
@@ -130,7 +146,7 @@ jobs:
     name: Trigger COPR builds
     needs: update-packages
     runs-on: ubuntu-latest
-    if: needs.update-packages.outputs.has_changes == 'true' && (github.event.inputs.trigger_builds == 'true' || github.event_name == 'schedule' || github.event_name == 'push')
+    if: (needs.update-packages.outputs.has_changes == 'true' || needs.update-packages.outputs.spec_changes == 'true') && (github.event.inputs.trigger_builds == 'true' || github.event_name == 'schedule' || github.event_name == 'push')
 
     steps:
       - name: Checkout repository

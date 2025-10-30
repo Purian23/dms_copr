@@ -40,92 +40,84 @@ trigger_build() {
     fi
 }
 
-# Check if we're running in GitHub Actions (COPR builds triggered by workflow)
+# Determine which packages to build based on git changes
+echo "🔍 Checking for changed spec files..."
+
+# Check if we're running in GitHub Actions
 if [[ -n "$GITHUB_ACTIONS" ]]; then
-    echo "🤖 Running in GitHub Actions - building packages with changes"
-    
-    # In GitHub Actions, we only run when there are actual upstream changes
-    # So we should build all packages to ensure they're all up to date
-    BUILD_QUICKSHELL=true
-    BUILD_QUICKSHELL_GIT=true
-    BUILD_DGOP=true
-    BUILD_CLIPHIST=true
-    BUILD_MATUGEN=true
-    BUILD_HYPRPICKER=true
-    BUILD_BREAKPAD=true
-    BUILD_GHOSTTY=true
-    BUILD_MATERIAL_SYMBOLS=true
+    echo "🤖 Running in GitHub Actions"
+    # Get files changed in the last commit
+    CHANGED_FILES=$(git diff HEAD~1 --name-only 2>/dev/null || echo "")
 else
-    echo "🔧 Running locally - checking for git changes"
-    # Determine which packages to build based on git changes
+    echo "🔧 Running locally"
+    # Get files changed in the last commit
     CHANGED_FILES=$(git diff HEAD~1 --name-only 2>/dev/null || echo "")
 
-    # Package build flags
-    BUILD_QUICKSHELL=false
-    BUILD_QUICKSHELL_GIT=false
-    BUILD_DGOP=false
-    BUILD_CLIPHIST=false
-    BUILD_MATUGEN=false
-    BUILD_HYPRPICKER=false
-    BUILD_BREAKPAD=false
-    BUILD_GHOSTTY=false
-    BUILD_MATERIAL_SYMBOLS=false
+# Package build flags
+BUILD_QUICKSHELL=false
+BUILD_QUICKSHELL_GIT=false
+BUILD_DGOP=false
+BUILD_CLIPHIST=false
+BUILD_MATUGEN=false
+BUILD_HYPRPICKER=false
+BUILD_BREAKPAD=false
+BUILD_GHOSTTY=false
+BUILD_MATERIAL_SYMBOLS=false
 
-    # Check which specs changed
-    if echo "$CHANGED_FILES" | grep -q "quickshell/quickshell.spec"; then
-        BUILD_QUICKSHELL=true
-    fi
+# Check which specs changed
+if echo "$CHANGED_FILES" | grep -q "quickshell/quickshell.spec"; then
+    BUILD_QUICKSHELL=true
+fi
 
-    if echo "$CHANGED_FILES" | grep -q "quickshell/quickshell-git.spec"; then
-        BUILD_QUICKSHELL_GIT=true
-    fi
+if echo "$CHANGED_FILES" | grep -q "quickshell/quickshell-git.spec"; then
+    BUILD_QUICKSHELL_GIT=true
+fi
 
-    if echo "$CHANGED_FILES" | grep -q "avenge_media/dgop/dgop.spec"; then
-        BUILD_DGOP=true
-    fi
+if echo "$CHANGED_FILES" | grep -q "avenge_media/dgop/dgop.spec"; then
+    BUILD_DGOP=true
+fi
 
-    if echo "$CHANGED_FILES" | grep -q "cliphist/cliphist.spec"; then
-        BUILD_CLIPHIST=true
-    fi
+if echo "$CHANGED_FILES" | grep -q "cliphist/cliphist.spec"; then
+    BUILD_CLIPHIST=true
+fi
 
-    if echo "$CHANGED_FILES" | grep -q "matugen/matugen.spec"; then
-        BUILD_MATUGEN=true
-    fi
+if echo "$CHANGED_FILES" | grep -q "matugen/matugen.spec"; then
+    BUILD_MATUGEN=true
+fi
 
-    if echo "$CHANGED_FILES" | grep -q "hyprpicker/hyprpicker.spec"; then
-        BUILD_HYPRPICKER=true
-    fi
+if echo "$CHANGED_FILES" | grep -q "hyprpicker/hyprpicker.spec"; then
+    BUILD_HYPRPICKER=true
+fi
 
-    if echo "$CHANGED_FILES" | grep -q "breakpad/breakpad.spec"; then
-        BUILD_BREAKPAD=true
-    fi
+if echo "$CHANGED_FILES" | grep -q "breakpad/breakpad.spec"; then
+    BUILD_BREAKPAD=true
+fi
 
-    if echo "$CHANGED_FILES" | grep -q "ghostty/ghostty.spec"; then
-        BUILD_GHOSTTY=true
-    fi
+if echo "$CHANGED_FILES" | grep -q "ghostty/ghostty.spec"; then
+    BUILD_GHOSTTY=true
+fi
 
-    if echo "$CHANGED_FILES" | grep -q "fonts/material-symbols-fonts.spec"; then
-        BUILD_MATERIAL_SYMBOLS=true
-    fi
+if echo "$CHANGED_FILES" | grep -q "fonts/material-symbols-fonts.spec"; then
+    BUILD_MATERIAL_SYMBOLS=true
+fi
 
-    # Note: dms-greeter builds from https://github.com/AvengeMedia/DankMaterialShell
-    # and is not tracked in this repository
+# Note: dms-greeter builds from https://github.com/AvengeMedia/DankMaterialShell
+# and is not tracked in this repository
 
-    # If no git history, check for uncommitted changes
-    if [[ -z "$CHANGED_FILES" ]]; then
-        echo "ℹ️  No git history found, checking for uncommitted changes..."
-        UNCOMMITTED=$(git diff --name-only 2>/dev/null || echo "")
+# If no git history, check for uncommitted changes
+if [[ -z "$CHANGED_FILES" ]]; then
+    echo "ℹ️  No git history found, checking for uncommitted changes..."
+    UNCOMMITTED=$(git diff --name-only 2>/dev/null || echo "")
 
-        echo "$UNCOMMITTED" | grep -q "quickshell/quickshell.spec" && BUILD_QUICKSHELL=true
-        echo "$UNCOMMITTED" | grep -q "quickshell/quickshell-git.spec" && BUILD_QUICKSHELL_GIT=true
-        echo "$UNCOMMITTED" | grep -q "avenge_media/dgop/dgop.spec" && BUILD_DGOP=true
-        echo "$UNCOMMITTED" | grep -q "cliphist/cliphist.spec" && BUILD_CLIPHIST=true
-        echo "$UNCOMMITTED" | grep -q "matugen/matugen.spec" && BUILD_MATUGEN=true
-        echo "$UNCOMMITTED" | grep -q "hyprpicker/hyprpicker.spec" && BUILD_HYPRPICKER=true
-        echo "$UNCOMMITTED" | grep -q "breakpad/breakpad.spec" && BUILD_BREAKPAD=true
-        echo "$UNCOMMITTED" | grep -q "ghostty/ghostty.spec" && BUILD_GHOSTTY=true
-        echo "$UNCOMMITTED" | grep -q "fonts/material-symbols-fonts.spec" && BUILD_MATERIAL_SYMBOLS=true
-    fi
+    echo "$UNCOMMITTED" | grep -q "quickshell/quickshell.spec" && BUILD_QUICKSHELL=true
+    echo "$UNCOMMITTED" | grep -q "quickshell/quickshell-git.spec" && BUILD_QUICKSHELL_GIT=true
+    echo "$UNCOMMITTED" | grep -q "avenge_media/dgop/dgop.spec" && BUILD_DGOP=true
+    echo "$UNCOMMITTED" | grep -q "cliphist/cliphist.spec" && BUILD_CLIPHIST=true
+    echo "$UNCOMMITTED" | grep -q "matugen/matugen.spec" && BUILD_MATUGEN=true
+    echo "$UNCOMMITTED" | grep -q "hyprpicker/hyprpicker.spec" && BUILD_HYPRPICKER=true
+    echo "$UNCOMMITTED" | grep -q "breakpad/breakpad.spec" && BUILD_BREAKPAD=true
+    echo "$UNCOMMITTED" | grep -q "ghostty/ghostty.spec" && BUILD_GHOSTTY=true
+    echo "$UNCOMMITTED" | grep -q "fonts/material-symbols-fonts.spec" && BUILD_MATERIAL_SYMBOLS=true
 fi
 
 # Trigger builds
