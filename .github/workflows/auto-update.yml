@@ -169,11 +169,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: master
+         uses: actions/checkout@v4
+         with:
+           ref: master
+           fetch-depth: 0
 
-      - name: Install COPR CLI
+       - name: Install COPR CLI
         run: |
           sudo dnf install -y copr-cli || sudo apt-get install -y copr-cli || {
             echo "⚠️ Could not install copr-cli via package manager"
