@@ -1,7 +1,7 @@
 %global debug_package %{nil}
 
 Name:           dgop
-Version:        0.1.9
+Version:        0.1.10
 Release:        1%{?dist}
 Summary:        System monitoring CLI and REST API
 
