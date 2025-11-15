@@ -6,10 +6,10 @@
    ✓ Already up to date
 
 📦 Checking quickshell-git (development)...
-   Current commit: a00ff03 (date: 20251114)
-   Latest commit:  0a36e3e (date: 20251115)
-   ✨ Update available: a00ff03 → 0a36e3e
-   Commit count: 702
+   Current commit: 0a36e3e (date: 20251115)
+   Latest commit:  0a7dcf3 (date: 20251115)
+   ✨ Update available: 0a36e3e → 0a7dcf3
+   Commit count: 704
 
 📦 Checking dgop...
    Current: 0.1.11
@@ -53,6 +53,6 @@
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Updated 1 package(s):
-   • quickshell-git: a00ff03 → 0a36e3e
+   • quickshell-git: 0a36e3e → 0a7dcf3
 
 📝 Changes staged for commit
