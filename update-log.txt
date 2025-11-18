@@ -7,8 +7,9 @@
 
 📦 Checking quickshell-git (development)...
    Current commit: fdbb86a (date: 20251116)
-   Latest commit:  fdbb86a (date: 20251116)
-   ✓ Already up to date
+   Latest commit:  ab494dd (date: 20251118)
+   ✨ Update available: fdbb86a → ab494dd
+   Commit count: 706
 
 📦 Checking dgop...
    Current: 0.1.11
@@ -51,4 +52,7 @@
    Skipping automatic updates for font file
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ All packages are up to date
+✅ Updated 1 package(s):
+   • quickshell-git: fdbb86a → ab494dd
+
+📝 Changes staged for commit
