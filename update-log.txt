@@ -6,10 +6,10 @@
    ✓ Already up to date
 
 📦 Checking quickshell-git (development)...
-   Current commit: fdbb86a (date: 20251116)
-   Latest commit:  ab494dd (date: 20251118)
-   ✨ Update available: fdbb86a → ab494dd
-   Commit count: 706
+   Current commit: ab494dd (date: 20251118)
+   Latest commit:  1ddb355 (date: 20251118)
+   ✨ Update available: ab494dd → 1ddb355
+   Commit count: 707
 
 📦 Checking dgop...
    Current: 0.1.11
@@ -53,6 +53,6 @@
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Updated 1 package(s):
-   • quickshell-git: fdbb86a → ab494dd
+   • quickshell-git: ab494dd → 1ddb355
 
 📝 Changes staged for commit
