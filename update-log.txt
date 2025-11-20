@@ -6,10 +6,9 @@
    ✓ Already up to date
 
 📦 Checking quickshell-git (development)...
-   Current commit: 1ddb355 (date: 20251118)
+   Current commit: ed036d5 (date: 20251120)
    Latest commit:  ed036d5 (date: 20251120)
-   ✨ Update available: 1ddb355 → ed036d5
-   Commit count: 708
+   ✓ Already up to date
 
 📦 Checking dgop...
    Current: 0.1.11
@@ -52,7 +51,4 @@
    Skipping automatic updates for font file
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Updated 1 package(s):
-   • quickshell-git: 1ddb355 → ed036d5
-
-📝 Changes staged for commit
+✓ All packages are up to date
